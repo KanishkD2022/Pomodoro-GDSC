@@ -9,6 +9,9 @@ packages = [{include = "repl_nix_jovian_taskguardian_1"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 flask = "^3.0.2"
+flask-security = "^3.0.0"
+flask-sqlalchemy = "^3.1.1"
+flask-mongoengine = "^1.0.0"
 
 
 [build-system]

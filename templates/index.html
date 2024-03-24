@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pomodoro Timer</title>
+    <style>
+      body {
+        font-family: Courier New, monospace;
+      }
+      h1 {
+        text-align: center;
+      }
+      .center {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .timer-container {
+        margin-top: 20px;
+      }
+      .timer-container button {
+        margin-right: 10px;
+      }
+      .task-container {
+        margin-top: 20px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 4px;
+      }
+      .tasks-history {
+        margin-top: 20px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 4px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Pomodoro Timer</h1>
+    <img src="static/banner.jpg" width="620" class="center" alt="Placeholder Image" />
+    <div class="timer-container">
+      <button id="start-timer">START</button>
+      <button id="reset-timer">RESET</button>
+      <button id="stop-timer">STOP</button>
+      <div class="time-container">
+        <span id="minutes">0</span> : <span id="seconds">0</span>
+      </div>
+    </div>
+    <div class="task-container">
+      <h2>Tasks:</h2>
+      <ol>
+        <li>
+          Task 1 <button class="check-task">✓</button>
+        </li>
+        <li>
+          Task 2 <button class="check-task">✓</button>
+        </li>
+        <li>
+          Task 3 <button class="check-task">✓</button>
+        </li>
+        <li>
+          Task 4 <button class="check-task">✓</button>
+        </li>
+      </ol>
+    </div>
+    <div class="tasks-history">
+      <button id="view-history">View History</button>
+      <h2>Task History:</h2>
+      <ol id="task-history"></ol>
+    </div>
+    <script>
+      // Timer function
+      // ...
+
+      // Button listeners for the tasks
+      // ...
+
+      // View History function
+      // ...
+
+      // Add tasks to the history list
+      // ...
+    </script>
+  </body>
+</html>
