@@ -1,85 +1,227 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Pomodoro Timer</title>
-    <style>
-      body {
-        font-family: Courier New, monospace;
-      }
-      h1 {
-        text-align: center;
-      }
-      .center {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-      }
-      .timer-container {
-        margin-top: 20px;
-      }
-      .timer-container button {
-        margin-right: 10px;
-      }
-      .task-container {
-        margin-top: 20px;
-        border: 1px solid #ccc;
-        padding: 10px;
-        border-radius: 4px;
-      }
-      .tasks-history {
-        margin-top: 20px;
-        border: 1px solid #ccc;
-        padding: 10px;
-        border-radius: 4px;
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Pomodoro Timer</h1>
-    <img src="static/banner.jpg" width="620" class="center" alt="Placeholder Image" />
-    <div class="timer-container">
-      <button id="start-timer">START</button>
-      <button id="reset-timer">RESET</button>
-      <button id="stop-timer">STOP</button>
-      <div class="time-container">
-        <span id="minutes">0</span> : <span id="seconds">0</span>
-      </div>
+<head>
+  <title>Pomodoro Timer</title>
+  <style>
+    body {
+      font-family: Courier New, monospace;
+    }
+    h1 {
+      text-align: center;
+    }
+    .center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .timer-container {
+      margin-top: 20px;
+      text-align: center; /* Center the timer */
+    }
+    .timer-container button {
+      margin-right: 10px;
+    }
+    .time-container {
+      font-size: 24px; /* Increase the font size of the timer */
+    }
+    .task-container {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .task-container input[type="text"] {
+      margin-bottom: 5px;
+    }
+    .task-history {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pomodoro Timer</h1>
+  <img src="static/banner.jpg" width="620" class="center" alt="Placeholder Image" />
+  <div class="timer-container">
+    <div class="time-container">
+      <span id="minutes">0</span> : <span id="seconds">0</span>
     </div>
-    <div class="task-container">
-      <h2>Tasks:</h2>
-      <ol>
-        <li>
-          Task 1 <button class="check-task">✓</button>
-        </li>
-        <li>
-          Task 2 <button class="check-task">✓</button>
-        </li>
-        <li>
-          Task 3 <button class="check-task">✓</button>
-        </li>
-        <li>
-          Task 4 <button class="check-task">✓</button>
-        </li>
-      </ol>
-    </div>
-    <div class="tasks-history">
-      <button id="view-history">View History</button>
-      <h2>Task History:</h2>
-      <ol id="task-history"></ol>
-    </div>
-    <script>
-      // Timer function
-      // ...
+    <label for="userInput">Set Timer (minutes):</label>
+    <input type="number" id="userInput" min="1" step="1" value="25">
+    <button id="start-timer">START</button>
+    <button id="reset-timer">RESET</button>
+    <button id="stop-timer">STOP</button>
+    <button id="start-rest">REST</button> <!-- Changed the id to "start-rest" -->
+  </div>
+  <div class="task-container">
+    <h2>Tasks:</h2>
+    <input type="text" id="taskInput" placeholder="Enter task...">
+    <button id="add-task">Add Task</button>
+    <ul id="taskList"></ul>
+  </div>
+  <div class="task-history">
+    <h2>Task History:</h2>
+    <ul id="completedTaskList"></ul>
+  </div>
+  <script>
+    let timerInterval;
+    let totalSeconds = 0;
+    const minutesDisplay = document.getElementById('minutes');
+    const secondsDisplay = document.getElementById('seconds');
+    const startTimerButton = document.getElementById('start-timer');
+    const stopTimerButton = document.getElementById('stop-timer');
+    const resetTimerButton = document.getElementById('reset-timer');
+    const restButton = document.getElementById('start-rest');
+    const userInput = document.getElementById('userInput');
+    const taskInput = document.getElementById('taskInput');
+    const addTaskButton = document.getElementById('add-task');
+    const taskList = document.getElementById('taskList');
+    const completedTaskList = document.getElementById('completedTaskList');
 
-      // Button listeners for the tasks
-      // ...
+    function startTimer(duration) {
+      totalSeconds = duration * 60;
+      timerInterval = setInterval(updateTimer, 1000);
+      startTimerButton.disabled = true;
+      userInput.disabled = true;
+    }
 
-      // View History function
-      // ...
+    function stopTimer() {
+      clearInterval(timerInterval);
+      startTimerButton.disabled = false;
+      userInput.disabled = false;
+    }
 
-      // Add tasks to the history list
-      // ...
-    </script>
-  </body>
-</html>
+    function resetTimer() {
+      clearInterval(timerInterval);
+      totalSeconds = 0;
+      updateTimerDisplay();
+      startTimerButton.disabled = false;
+      userInput.disabled = false;
+    }
+
+    function updateTimer() {
+      if (totalSeconds <= 0) {
+        clearInterval(timerInterval);
+        alert('Timer finished!');
+        startTimerButton.disabled = false;
+        userInput.disabled = false;
+      } else {
+        totalSeconds--;
+        updateTimerDisplay();
+      }
+    }
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      minutesDisplay.textContent = minutes;
+      secondsDisplay.textContent = seconds < 10 ? '0' + seconds : seconds;
+    }
+
+    function startRest() {
+      stopTimer();
+      totalSeconds = 5 * 60; // 5 minutes rest time
+      updateTimerDisplay();
+      timerInterval = setInterval(updateTimer, 1000);
+      startTimerButton.disabled = true;
+      userInput.disabled = true;
+    }
+
+    function addTask() {
+      const taskText = taskInput.value.trim();
+      if (taskText !== '') {
+        const li = document.createElement('li');
+        li.textContent = taskText;
+        const completeButton = document.createElement('button');
+        completeButton.textContent = '✓';
+        completeButton.classList.add('complete-task');
+        li.appendChild(completeButton);
+
+        // Add delete button only if it's a new task
+        if (!li.querySelector('.delete-task')) {
+          const deleteButton = document.createElement('button');
+          deleteButton.textContent = 'Delete';
+          deleteButton.classList.add('delete-task');
+          li.appendChild(deleteButton);
+        }
+
+        taskList.appendChild(li);
+        taskInput.value = '';
+      }
+    }
+
+
+
+
+    function completeTask(task) {
+      if (!task.querySelector('.remove-task')) {
+        const removeButton = document.createElement('button');
+        removeButton.textContent = '✖';
+        removeButton.classList.add('remove-task');
+        task.appendChild(removeButton);
+      }
+      if (!task.querySelector('.delete-task')) {
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.classList.add('delete-task');
+        task.appendChild(deleteButton);
+      }
+
+      const completeButton = task.querySelector('.complete-task');
+      completeButton.disabled = true;
+      task.style.textDecoration = 'line-through';
+      taskList.removeChild(task);
+      completedTaskList.appendChild(task);
+    }
+
+
+    function removeTask(task) {
+      task.remove();
+    }
+
+    function replaceTask(task) {
+      const completeButton = task.querySelector('.complete-task');
+      if (completeButton) {
+        completeButton.removeAttribute('disabled');
+      }
+
+      if (!task.querySelector('.delete-task')) {
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.classList.add('delete-task');
+        task.appendChild(deleteButton);
+      }
+
+      task.style.textDecoration = 'none';
+      completedTaskList.removeChild(task);
+      taskList.appendChild(task);
+    }
+
+
+
+    addTaskButton.addEventListener('click', addTask);
+
+    document.addEventListener('click', function(event) {
+      if (event.target.classList.contains('complete-task')) {
+        completeTask(event.target.parentNode);
+      }
+      if (event.target.classList.contains('delete-task')) {
+                  removeTask(event.target.parentNode);
+                }
+                if (event.target.classList.contains('remove-task')) {
+                  replaceTask(event.target.parentNode);
+                }
+              });
+
+              startTimerButton.addEventListener('click', function() {
+                startTimer(parseInt(userInput.value));
+              });
+              stopTimerButton.addEventListener('click', stopTimer);
+              resetTimerButton.addEventListener('click', resetTimer);
+              restButton.addEventListener('click', startRest);
+            </script>
+          </body>
+          </html>
+
