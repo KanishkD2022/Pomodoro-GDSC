@@ -5,6 +5,10 @@
   <style>
     body {
       font-family: Courier New, monospace;
+      background-repeat: no-repeat;
+      background-size: cover;
+      transition: background-image 0.5s ease; /* Smooth transition */
+      padding: 20px; /* Add padding for separation */
     }
     h1 {
       text-align: center;
@@ -17,41 +21,74 @@
     .timer-container {
       margin-top: 20px;
       text-align: center; /* Center the timer */
+      background-color: rgba(255, 255, 255, 0.5); /* Translucent white background */
+      padding: 10px; /* Add padding for separation */
+      border-radius: 8px; /* Rounded corners */
     }
     .timer-container button {
       margin-right: 10px;
+      padding: 8px 16px; /* Add padding for buttons */
+      border: none; /* Remove border */
+      background-color: #4caf50; /* Green color */
+      color: white; /* White text color */
+      border-radius: 4px; /* Rounded corners */
+      cursor: pointer;
     }
     .time-container {
       font-size: 24px; /* Increase the font size of the timer */
     }
     .task-container {
       margin-top: 20px;
-      border: 1px solid #ccc;
       padding: 10px;
       border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.5); /* Translucent white background */
     }
-    .task-container input[type="number"] {
+    .task-container input[type="number"],
+    .task-container input[type="text"],
+    .task-container button {
       margin-bottom: 5px;
       width: 80px;
+      padding: 8px; /* Add padding for text boxes and buttons */
+      border: none; /* Remove border */
+      background-color: rgba(255, 255, 255, 0.8); /* Slightly more opaque background */
+      border-radius: 4px; /* Rounded corners */
+    }
+    .task-container button {
+      background-color: #4caf50; /* Green color */
+      color: white; /* White text color */
+      margin-left: 5px; /* Add margin between buttons */
+      margin-right: 5px; /* Add margin between buttons */
     }
     .task-history {
       margin-top: 20px;
-      border: 1px solid #ccc;
       padding: 10px;
       border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.5); /* Translucent white background */
+    }
+    .task-history button {
+      margin-left: 5px; /* Add margin between buttons */
+      margin-right: 5px; /* Add margin between buttons */
+      padding: 8px 16px; /* Add padding for buttons */
+      border: none; /* Remove border */
+      background-color: #4caf50; /* Green color */
+      color: white; /* White text color */
+      border-radius: 4px; /* Rounded corners */
+      cursor: pointer;
     }
     .progress-bar-container {
       width: 100%;
       height: 20px;
-      background-color: #f3f3f3;
+      background-color: rgba(255, 255, 255, 0.5); /* Translucent white background */
       margin: 20px auto;
       border-radius: 4px;
+      overflow: hidden; /* Hide overflow for rounded corners */
     }
     .progress-bar {
       height: 100%;
       background-color: #4caf50;
       border-radius: 4px;
-      width: 0; /* Initially zero width */
+      width: 100%; /* Initially full width */
+      transition: width 0.5s ease; /* Smooth transition */
     }
   </style>
 </head>
@@ -84,6 +121,7 @@
   <div class="task-history">
     <h2>Task History:</h2>
     <ul id="completedTaskList"></ul>
+    
   </div>
   <script>
     let timerInterval;
@@ -101,12 +139,15 @@
     const taskList = document.getElementById('taskList');
     const completedTaskList = document.getElementById('completedTaskList');
     const progressBar = document.getElementById('progress-bar');
+    const revertButton = document.getElementById('revert-task');
+    const clearHistoryButton = document.getElementById('clear-history');
 
     function startTimer(workDuration, restDuration) {
       totalSeconds = isWorkPhase ? workDuration * 60 : restDuration * 60;
       timerInterval = setInterval(updateTimer, 1000);
       workTimeInput.disabled = true;
       restTimeInput.disabled = true;
+      updateBackgroundColor(); // Update background color initially
     }
 
     function stopTimer() {
@@ -127,14 +168,13 @@
       if (totalSeconds <= 0) {
         clearInterval(timerInterval);
         if (isWorkPhase) {
-          showNotification('Work Phase Over', 'Time to take a rest!');
           isWorkPhase = false;
           startTimer(parseInt(restTimeInput.value), parseInt(workTimeInput.value));
         } else {
-          showNotification('Rest Phase Over', 'Back to work!');
           isWorkPhase = true;
           startTimer(parseInt(workTimeInput.value), parseInt(restTimeInput.value));
         }
+        updateBackgroundColor(); // Update background color when phase changes
       } else {
         totalSeconds--;
         updateTimerDisplay();
@@ -150,7 +190,12 @@
     }
 
     function updateProgressBar() {
-      const progress = ((isWorkPhase ? parseInt(workTimeInput.value) : parseInt(restTimeInput.value)) * 60 - totalSeconds) / ((isWorkPhase ? parseInt(workTimeInput.value) : parseInt(restTimeInput.value)) * 60) * 100;
+      let progress;
+      if (isWorkPhase) {
+        progress = (totalSeconds / (parseInt(workTimeInput.value) * 60)) * 100;
+      } else {
+        progress = 100 - ((totalSeconds / (parseInt(restTimeInput.value) * 60)) * 100);
+      }
       progressBar.style.width = progress + '%';
     }
 
@@ -177,15 +222,11 @@
       }
     }
 
-    function showNotification(title, body) {
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, { body: body });
-      } else if ('Notification' in window && Notification.permission !== 'denied') {
-        Notification.requestPermission().then(function (permission) {
-          if (permission === 'granted') {
-            new Notification(title, { body: body });
-          }
-        });
+    function updateBackgroundColor() {
+      if (isWorkPhase) {
+        document.body.style.backgroundColor = '#444'; // Dark grey during work phase
+      } else {
+        document.body.style.backgroundColor = '#eee'; // Light grey during rest phase
       }
     }
 
@@ -208,13 +249,18 @@
       task.style.textDecoration = 'line-through';
       taskList.removeChild(task);
       completedTaskList.appendChild(task);
+
+      if (completedTaskList.children.length > 0) {
+        revertButton.style.display = 'inline-block'; // Show revert button if task history is not empty
+        clearHistoryButton.style.display = 'inline-block'; // Show clear history button if task history is not empty
+      }
     }
 
     function removeTask(task) {
       task.remove();
     }
 
-    function replaceTask(task) {
+    function revertTask(task) {
       const completeButton = task.querySelector('.complete-task');
       if (completeButton) {
         completeButton.removeAttribute('disabled');
@@ -230,6 +276,17 @@
       task.style.textDecoration = 'none';
       completedTaskList.removeChild(task);
       taskList.appendChild(task);
+
+      if (completedTaskList.children.length === 0) {
+        revertButton.style.display = 'none'; // Hide revert button if task history is empty
+        clearHistoryButton.style.display = 'none'; // Hide clear history button if task history is empty
+      }
+    }
+
+    function clearHistory() {
+      completedTaskList.innerHTML = ''; // Clear task history
+      revertButton.style.display = 'none'; // Hide revert button
+      clearHistoryButton.style.display = 'none'; // Hide clear history button
     }
 
     addTaskButton.addEventListener('click', addTask);
@@ -242,7 +299,13 @@
         removeTask(event.target.parentNode);
       }
       if (event.target.classList.contains('remove-task')) {
-        replaceTask(event.target.parentNode);
+        revertTask(event.target.parentNode);
+      }
+      if (event.target.classList.contains('revert-task')) {
+        revertTask(event.target.parentNode);
+      }
+      if (event.target.classList.contains('clear-history')) {
+        clearHistory();
       }
     });
 
