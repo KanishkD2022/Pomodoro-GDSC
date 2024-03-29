@@ -30,14 +30,28 @@
       padding: 10px;
       border-radius: 4px;
     }
-    .task-container input[type="text"] {
+    .task-container input[type="number"] {
       margin-bottom: 5px;
+      width: 80px;
     }
     .task-history {
       margin-top: 20px;
       border: 1px solid #ccc;
       padding: 10px;
       border-radius: 4px;
+    }
+    .progress-bar-container {
+      width: 100%;
+      height: 20px;
+      background-color: #f3f3f3;
+      margin: 20px auto;
+      border-radius: 4px;
+    }
+    .progress-bar {
+      height: 100%;
+      background-color: #4caf50;
+      border-radius: 4px;
+      width: 0; /* Initially zero width */
     }
   </style>
 </head>
@@ -48,12 +62,18 @@
     <div class="time-container">
       <span id="minutes">0</span> : <span id="seconds">0</span>
     </div>
-    <label for="userInput">Set Timer (minutes):</label>
-    <input type="number" id="userInput" min="1" step="1" value="25">
+    <label for="work-time">Work Phase Timer (minutes):</label>
+    <input type="number" id="work-time" min="1" step="1" value="25">
+    <br>
+    <label for="rest-time">Rest Phase Timer (minutes):</label>
+    <input type="number" id="rest-time" min="1" step="1" value="5">
+    <br>
     <button id="start-timer">START</button>
     <button id="reset-timer">RESET</button>
     <button id="stop-timer">STOP</button>
-    <button id="start-rest">REST</button> <!-- Changed the id to "start-rest" -->
+  </div>
+  <div class="progress-bar-container">
+    <div id="progress-bar" class="progress-bar"></div>
   </div>
   <div class="task-container">
     <h2>Tasks:</h2>
@@ -68,48 +88,57 @@
   <script>
     let timerInterval;
     let totalSeconds = 0;
+    let isWorkPhase = true;
     const minutesDisplay = document.getElementById('minutes');
     const secondsDisplay = document.getElementById('seconds');
     const startTimerButton = document.getElementById('start-timer');
     const stopTimerButton = document.getElementById('stop-timer');
     const resetTimerButton = document.getElementById('reset-timer');
-    const restButton = document.getElementById('start-rest');
-    const userInput = document.getElementById('userInput');
+    const workTimeInput = document.getElementById('work-time');
+    const restTimeInput = document.getElementById('rest-time');
     const taskInput = document.getElementById('taskInput');
     const addTaskButton = document.getElementById('add-task');
     const taskList = document.getElementById('taskList');
     const completedTaskList = document.getElementById('completedTaskList');
+    const progressBar = document.getElementById('progress-bar');
 
-    function startTimer(duration) {
-      totalSeconds = duration * 60;
+    function startTimer(workDuration, restDuration) {
+      totalSeconds = isWorkPhase ? workDuration * 60 : restDuration * 60;
       timerInterval = setInterval(updateTimer, 1000);
-      startTimerButton.disabled = true;
-      userInput.disabled = true;
+      workTimeInput.disabled = true;
+      restTimeInput.disabled = true;
     }
 
     function stopTimer() {
       clearInterval(timerInterval);
-      startTimerButton.disabled = false;
-      userInput.disabled = false;
+      workTimeInput.disabled = false;
+      restTimeInput.disabled = false;
     }
 
     function resetTimer() {
       clearInterval(timerInterval);
       totalSeconds = 0;
       updateTimerDisplay();
-      startTimerButton.disabled = false;
-      userInput.disabled = false;
+      workTimeInput.disabled = false;
+      restTimeInput.disabled = false;
     }
 
     function updateTimer() {
       if (totalSeconds <= 0) {
         clearInterval(timerInterval);
-        alert('Timer finished!');
-        startTimerButton.disabled = false;
-        userInput.disabled = false;
+        if (isWorkPhase) {
+          showNotification('Work Phase Over', 'Time to take a rest!');
+          isWorkPhase = false;
+          startTimer(parseInt(restTimeInput.value), parseInt(workTimeInput.value));
+        } else {
+          showNotification('Rest Phase Over', 'Back to work!');
+          isWorkPhase = true;
+          startTimer(parseInt(workTimeInput.value), parseInt(restTimeInput.value));
+        }
       } else {
         totalSeconds--;
         updateTimerDisplay();
+        updateProgressBar();
       }
     }
 
@@ -120,13 +149,9 @@
       secondsDisplay.textContent = seconds < 10 ? '0' + seconds : seconds;
     }
 
-    function startRest() {
-      stopTimer();
-      totalSeconds = 5 * 60; // 5 minutes rest time
-      updateTimerDisplay();
-      timerInterval = setInterval(updateTimer, 1000);
-      startTimerButton.disabled = true;
-      userInput.disabled = true;
+    function updateProgressBar() {
+      const progress = ((isWorkPhase ? parseInt(workTimeInput.value) : parseInt(restTimeInput.value)) * 60 - totalSeconds) / ((isWorkPhase ? parseInt(workTimeInput.value) : parseInt(restTimeInput.value)) * 60) * 100;
+      progressBar.style.width = progress + '%';
     }
 
     function addTask() {
@@ -152,8 +177,17 @@
       }
     }
 
-
-
+    function showNotification(title, body) {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { body: body });
+      } else if ('Notification' in window && Notification.permission !== 'denied') {
+        Notification.requestPermission().then(function (permission) {
+          if (permission === 'granted') {
+            new Notification(title, { body: body });
+          }
+        });
+      }
+    }
 
     function completeTask(task) {
       if (!task.querySelector('.remove-task')) {
@@ -175,7 +209,6 @@
       taskList.removeChild(task);
       completedTaskList.appendChild(task);
     }
-
 
     function removeTask(task) {
       task.remove();
@@ -199,8 +232,6 @@
       taskList.appendChild(task);
     }
 
-
-
     addTaskButton.addEventListener('click', addTask);
 
     document.addEventListener('click', function(event) {
@@ -208,20 +239,18 @@
         completeTask(event.target.parentNode);
       }
       if (event.target.classList.contains('delete-task')) {
-                  removeTask(event.target.parentNode);
-                }
-                if (event.target.classList.contains('remove-task')) {
-                  replaceTask(event.target.parentNode);
-                }
-              });
+        removeTask(event.target.parentNode);
+      }
+      if (event.target.classList.contains('remove-task')) {
+        replaceTask(event.target.parentNode);
+      }
+    });
 
-              startTimerButton.addEventListener('click', function() {
-                startTimer(parseInt(userInput.value));
-              });
-              stopTimerButton.addEventListener('click', stopTimer);
-              resetTimerButton.addEventListener('click', resetTimer);
-              restButton.addEventListener('click', startRest);
-            </script>
-          </body>
-          </html>
-
+    startTimerButton.addEventListener('click', function() {
+      startTimer(parseInt(workTimeInput.value), parseInt(restTimeInput.value));
+    });
+    stopTimerButton.addEventListener('click', stopTimer);
+    resetTimerButton.addEventListener('click', resetTimer);
+  </script>
+</body>
+</html>
