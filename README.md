@@ -1,6 +1,6 @@
-##Pomodoro Timer
+## Pomodoro Timer
 
-##Description
+## Description
 A Pomodoro timer was developed by Francesco Cirillo in the late 1980s as a simple time management tool to focus and enhance one’s productivity. The basic technique used is the division of work: one works for a set period, “a Pomodoro” traditionally 25 minutes, and then takes a short break. The Pomodoro timer consists of the following aspects:
 
 “Work sessions : One Pomodoro divides your work into focused sessions” For 25 minutes, you focus only on your job and are not distracted from it; 
