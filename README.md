@@ -25,7 +25,7 @@ Timer Tools: Pomodoro timers come in many types, such as physical timers, applic
 2. **Starting the Timer:** Click the "START" button to begin the Pomodoro timer.
 3. **Monitoring Progress:** Track the remaining time for the current phase and view the progress bar.
 4. **Managing Tasks:** Add tasks, mark them as completed, and delete or revert completed tasks as needed.
-5. **Resetting the Timer:** Reset the timer to its initial state to start a new session
+5. **Resetting the Timer:** Reset the timer to its initial state to start a new session.
 
 ## License
 
